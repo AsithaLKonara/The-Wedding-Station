@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import type { HeroContent } from "@/types";
 
 export default function Hero() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -18,7 +20,24 @@ export default function Hero() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE || "The Wedding Station";
+  useEffect(() => {
+    const loadHeroContent = async () => {
+      try {
+        const response = await fetch("/api/content/hero");
+        const data = await response.json();
+        if (data.content) {
+          setHeroContent(data.content);
+        }
+      } catch (error) {
+        console.error("Error loading hero content:", error);
+      }
+    };
+    loadHeroContent();
+  }, []);
+
+  const siteTitle = heroContent?.title || process.env.NEXT_PUBLIC_SITE_TITLE || "The Wedding Station";
+  const subtitle = heroContent?.subtitle || "Capturing Moments, Creating Memories";
+  const backgroundImage = heroContent?.background_image || "https://images.unsplash.com/photo-1519741497674-611481863552?w=1920";
 
   return (
     <section
@@ -29,7 +48,7 @@ export default function Hero() {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1519741497674-611481863552?w=1920')",
+          backgroundImage: `url('${backgroundImage}')`,
           transform: `translate(${mousePosition.x}px, ${mousePosition.y}px) scale(1.1)`,
           transition: "transform 0.1s ease-out",
         }}
@@ -85,7 +104,7 @@ export default function Hero() {
           transition={{ duration: 1, delay: 0.8 }}
           className="text-lg sm:text-xl md:text-2xl text-white/80 font-light tracking-widest uppercase mb-12 letter-spacing-wide"
         >
-          Capturing Moments, Creating Memories
+          {subtitle}
         </motion.p>
 
         <motion.div
@@ -94,22 +113,46 @@ export default function Hero() {
           transition={{ duration: 1, delay: 1 }}
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
         >
-          <motion.a
-            href="#gallery"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-4 bg-white text-black font-medium text-sm uppercase tracking-widest hover:bg-white/90 transition-all duration-300"
-          >
-            View Portfolio
-          </motion.a>
-          <motion.a
-            href="#contact"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-10 py-4 border border-white/50 text-white font-medium text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white transition-all duration-300"
-          >
-            Get In Touch
-          </motion.a>
+          {heroContent?.cta_primary && (
+            <motion.a
+              href={heroContent.cta_primary.link}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 bg-white text-black font-medium text-sm uppercase tracking-widest hover:bg-white/90 transition-all duration-300"
+            >
+              {heroContent.cta_primary.text}
+            </motion.a>
+          )}
+          {heroContent?.cta_secondary && (
+            <motion.a
+              href={heroContent.cta_secondary.link}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-10 py-4 border border-white/50 text-white font-medium text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white transition-all duration-300"
+            >
+              {heroContent.cta_secondary.text}
+            </motion.a>
+          )}
+          {!heroContent?.cta_primary && !heroContent?.cta_secondary && (
+            <>
+              <motion.a
+                href="#gallery"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-10 py-4 bg-white text-black font-medium text-sm uppercase tracking-widest hover:bg-white/90 transition-all duration-300"
+              >
+                View Portfolio
+              </motion.a>
+              <motion.a
+                href="#contact"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-10 py-4 border border-white/50 text-white font-medium text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white transition-all duration-300"
+              >
+                Get In Touch
+              </motion.a>
+            </>
+          )}
         </motion.div>
       </motion.div>
 

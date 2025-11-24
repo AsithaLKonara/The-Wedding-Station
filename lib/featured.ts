@@ -120,3 +120,43 @@ export async function updateFeaturedImageOrder(
   await saveFeaturedImages(updated);
 }
 
+/**
+ * Bulk delete featured images
+ */
+export async function bulkDeleteFeaturedImages(ids: string[]): Promise<number> {
+  const existing = await getFeaturedImages();
+  const filtered = existing.filter((img) => !ids.includes(img.id));
+  const deletedCount = existing.length - filtered.length;
+  
+  if (deletedCount > 0) {
+    await saveFeaturedImages(filtered);
+  }
+  
+  return deletedCount;
+}
+
+/**
+ * Bulk update featured images
+ */
+export async function bulkUpdateFeaturedImages(
+  updates: Array<{ id: string; updates: Partial<FeaturedImage> }>
+): Promise<number> {
+  const existing = await getFeaturedImages();
+  const updateMap = new Map(updates.map((u) => [u.id, u.updates]));
+  let updatedCount = 0;
+
+  const updated = existing.map((img) => {
+    if (updateMap.has(img.id)) {
+      updatedCount++;
+      return { ...img, ...updateMap.get(img.id)! };
+    }
+    return img;
+  });
+
+  if (updatedCount > 0) {
+    await saveFeaturedImages(updated);
+  }
+
+  return updatedCount;
+}
+

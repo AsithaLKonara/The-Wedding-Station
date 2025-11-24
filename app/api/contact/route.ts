@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
+import { addContactSubmission } from "@/lib/storage/contacts";
 import type { ContactFormData, ContactApiResponse } from "@/types";
 
 /**
@@ -70,6 +71,15 @@ ${message}
 
         await sgMail.send(emailContent);
 
+        // Save to storage
+        await addContactSubmission({
+          name,
+          email,
+          phone,
+          message,
+          subject,
+        });
+
         return NextResponse.json<ContactApiResponse>({
           success: true,
           message: "Thank you! Your message has been sent successfully.",
@@ -111,6 +121,15 @@ ${message}
           `.trim(),
         });
 
+        // Save to storage
+        await addContactSubmission({
+          name,
+          email,
+          phone,
+          message,
+          subject,
+        });
+
         return NextResponse.json<ContactApiResponse>({
           success: true,
           message: "Thank you! Your message has been sent successfully.",
@@ -120,11 +139,19 @@ ${message}
       }
     }
 
-    // No email service configured
+    // No email service configured - still save the submission
+    await addContactSubmission({
+      name,
+      email,
+      phone,
+      message,
+      subject,
+    });
+
     return NextResponse.json<ContactApiResponse>(
       {
         success: false,
-        message: "Email service not configured. Please contact the administrator.",
+        message: "Email service not configured. Your message has been saved and will be reviewed.",
         error: "No email service available",
       },
       { status: 500 }
