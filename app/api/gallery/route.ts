@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGalleryImages, addGalleryImage } from "@/lib/storage/gallery";
 import { v2 as cloudinary } from "cloudinary";
+import { validateFile, validateUrl, validateString } from "@/lib/validation";
+import { createErrorResponse } from "@/lib/errors";
+import { withAuth } from "@/lib/api-helpers";
 import type { GalleryImage } from "@/types";
 
 const hasCloudinaryConfig =
@@ -31,7 +34,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest, session: any) {
   try {
     const formData = await request.formData();
     const imageFile = formData.get("file") as File | null;
@@ -40,6 +43,33 @@ export async function POST(request: NextRequest) {
     const caption = formData.get("caption") as string | null;
     const album = formData.get("album") as string | null;
     const category = formData.get("category") as string | null;
+
+    // Validate inputs
+    if (imageFile) {
+      const fileValidation = validateFile(imageFile, {
+        maxSizeMB: 10,
+        allowedTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+      });
+      if (!fileValidation.valid) {
+        return NextResponse.json(
+          { success: false, error: fileValidation.errors.join(", ") },
+          { status: 400 }
+        );
+      }
+    } else if (imageUrl) {
+      const urlValidation = validateUrl(imageUrl, "Image URL");
+      if (!urlValidation.valid) {
+        return NextResponse.json(
+          { success: false, error: urlValidation.errors.join(", ") },
+          { status: 400 }
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { success: false, error: "File or image_url is required" },
+        { status: 400 }
+      );
+    }
 
     let finalImageUrl: string;
     let thumbnailUrl: string | undefined;

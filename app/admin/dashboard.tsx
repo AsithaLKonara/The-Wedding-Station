@@ -4,10 +4,19 @@ import { useState, useEffect } from "react";
 import TabNavigation from "@/components/admin/TabNavigation";
 import StatsCard from "@/components/admin/StatsCard";
 import ContactList from "@/components/admin/ContactList";
+import ContactListEnhanced from "@/components/admin/ContactListEnhanced";
 import ActivityLog from "@/components/admin/ActivityLog";
 import ThemePicker from "@/components/admin/ThemePicker";
 import SectionToggle from "@/components/admin/SectionToggle";
-import ImageUploader from "@/components/admin/ImageUploader";
+import HeroEditor from "@/components/admin/HeroEditor";
+import AboutEditor from "@/components/admin/AboutEditor";
+import SettingsEditor from "@/components/admin/SettingsEditor";
+import SEOEditor from "@/components/admin/SEOEditor";
+import GalleryManager from "@/components/admin/GalleryManager";
+import VideoManager from "@/components/admin/VideoManager";
+import FeaturedManager from "@/components/admin/FeaturedManager";
+import UserManager from "@/components/admin/UserManager";
+import BackupManager from "@/components/admin/BackupManager";
 import Image from "next/image";
 import type {
   FeaturedImage,
@@ -172,6 +181,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         body: JSON.stringify({ status }),
       });
       setContacts(contacts.map((c) => (c.id === id ? { ...c, status } : c)));
+      await logActivity("update", "contact", id, { status });
       setMessage({ type: "success", text: "Contact status updated" });
     } catch (error) {
       setMessage({ type: "error", text: "Failed to update contact" });
@@ -182,6 +192,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     try {
       await fetch(`/api/contacts/${id}`, { method: "DELETE" });
       setContacts(contacts.filter((c) => c.id !== id));
+      await logActivity("delete", "contact", id);
       setMessage({ type: "success", text: "Contact deleted" });
     } catch (error) {
       setMessage({ type: "error", text: "Failed to delete contact" });
@@ -190,6 +201,144 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const handleExportContacts = () => {
     window.open("/api/export?format=csv", "_blank");
+  };
+
+  const logActivity = async (
+    action: string,
+    resourceType: string,
+    resourceId?: string,
+    details?: Record<string, unknown>
+  ) => {
+    try {
+      await fetch("/api/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          resource_type: resourceType,
+          resource_id: resourceId,
+          details: details || {},
+        }),
+      });
+      // Refresh activity logs
+      const activityRes = await fetch("/api/activity?limit=20");
+      const activityData = await activityRes.json();
+      if (activityData.logs) setActivityLogs(activityData.logs);
+    } catch (error) {
+      console.error("Error logging activity:", error);
+    }
+  };
+
+  const handleSaveHero = async (content: HeroContent) => {
+    try {
+      await fetch("/api/content/hero", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(content),
+      });
+      setHeroContent(content);
+      await logActivity("update", "hero", undefined, { title: content.title });
+      setMessage({ type: "success", text: "Hero content saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save hero content" });
+    }
+  };
+
+  const handleSaveAbout = async (content: AboutContent) => {
+    try {
+      await fetch("/api/content/about", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(content),
+      });
+      setAboutContent(content);
+      await logActivity("update", "about", undefined, { title: content.title });
+      setMessage({ type: "success", text: "About content saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save about content" });
+    }
+  };
+
+  const handleSaveSettings = async (settings: SiteSettings) => {
+    try {
+      await fetch("/api/content/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      setSiteSettings(settings);
+      await logActivity("update", "settings");
+      setMessage({ type: "success", text: "Settings saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save settings" });
+    }
+  };
+
+  const handleSaveTheme = async (themeSettings: ThemeSettings) => {
+    try {
+      await fetch("/api/theme", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(themeSettings),
+      });
+      setTheme(themeSettings);
+      await logActivity("update", "theme");
+      setMessage({ type: "success", text: "Theme saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save theme" });
+    }
+  };
+
+  const handleSaveSections = async (visibility: SectionVisibility) => {
+    try {
+      await fetch("/api/sections", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(visibility),
+      });
+      setSections(visibility);
+      await logActivity("update", "sections");
+      setMessage({ type: "success", text: "Section visibility saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save section visibility" });
+    }
+  };
+
+  const handleSaveSEO = async (seoSettings: SEOSettings) => {
+    try {
+      await fetch("/api/seo", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(seoSettings),
+      });
+      setSeoSettings(seoSettings);
+      await logActivity("update", "seo");
+      setMessage({ type: "success", text: "SEO settings saved successfully" });
+      await loadDashboardData();
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to save SEO settings" });
+    }
+  };
+
+  const handleFacebookSync = async () => {
+    try {
+      const response = await fetch("/api/fb/sync", { method: "POST" });
+      const data = await response.json();
+      if (data.posts) {
+        await logActivity("sync", "facebook", undefined, { posts_found: data.posts.length });
+        setMessage({ type: "success", text: `Synced ${data.posts.length} posts from Facebook` });
+        await loadDashboardData();
+      } else {
+        setMessage({ type: "error", text: data.error || "Failed to sync" });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to sync Facebook posts" });
+    }
   };
 
   const renderTabContent = () => {
@@ -229,24 +378,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold mb-4">Hero Section</h3>
-              <p className="text-sm text-gray-600 mb-4">Edit hero section content</p>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                Edit Hero
-              </button>
+              <HeroEditor content={heroContent} onSave={handleSaveHero} />
             </div>
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold mb-4">About Section</h3>
-              <p className="text-sm text-gray-600 mb-4">Edit about section content</p>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                Edit About
-              </button>
+              <AboutEditor content={aboutContent} onSave={handleSaveAbout} />
             </div>
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold mb-4">Site Settings</h3>
-              <p className="text-sm text-gray-600 mb-4">Manage site-wide settings</p>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                Edit Settings
-              </button>
+              <SettingsEditor settings={siteSettings} onSave={handleSaveSettings} />
             </div>
           </div>
         );
@@ -254,56 +394,45 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       case "gallery":
         return (
           <div className="space-y-6">
+            <GalleryManager
+              images={galleryImages}
+              onRefresh={loadDashboardData}
+              onActivity={logActivity}
+            />
             <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold mb-4">Gallery Images ({galleryImages.length})</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {galleryImages.slice(0, 8).map((img) => (
-                  <div key={img.id} className="relative aspect-square">
-                    <Image
-                      src={img.thumbnail_url || img.image_url}
-                      alt={img.title || "Gallery image"}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold mb-4">Videos ({videos.length})</h3>
-              <p className="text-sm text-gray-600">Video management coming soon</p>
+              <h3 className="text-lg font-semibold mb-4">Videos</h3>
+              <VideoManager
+                videos={videos}
+                onRefresh={loadDashboardData}
+                onActivity={logActivity}
+              />
             </div>
           </div>
         );
 
       case "featured":
         return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg p-6 border border-gray-200">
-              <h3 className="text-lg font-semibold mb-4">Featured Images ({featuredImages.length})</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {featuredImages.map((img) => (
-                  <div key={img.id} className="relative aspect-square">
-                    <Image
-                      src={img.thumbnail_url || img.image_url}
-                      alt={img.title || "Featured"}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <FeaturedManager
+            images={featuredImages}
+            onRefresh={loadDashboardData}
+            onActivity={logActivity}
+          />
         );
 
       case "contacts":
         return (
-          <ContactList
+          <ContactListEnhanced
             contacts={contacts}
             onStatusChange={handleContactStatusChange}
             onDelete={handleContactDelete}
             onExport={handleExportContacts}
+            onBulkAction={async (action, ids) => {
+              if (action === "delete") {
+                for (const id of ids) {
+                  await handleContactDelete(id);
+                }
+              }
+            }}
           />
         );
 
@@ -312,22 +441,59 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold mb-4">Connection Status</h3>
-              <div className={`p-4 rounded-lg ${fbStatus?.connected ? "bg-green-50" : "bg-red-50"}`}>
+              <div className={`p-4 rounded-lg mb-4 ${fbStatus?.connected ? "bg-green-50" : "bg-red-50"}`}>
                 <p className={fbStatus?.connected ? "text-green-800" : "text-red-800"}>
-                  {fbStatus?.connected ? "Connected" : "Not Connected"}
+                  {fbStatus?.connected ? "✅ Connected" : "❌ Not Connected"}
                 </p>
                 {fbStatus?.error && <p className="text-sm mt-2">{fbStatus.error}</p>}
+                {fbStatus?.page_id && <p className="text-sm mt-2">Page ID: {fbStatus.page_id}</p>}
+                {fbStatus?.last_sync && (
+                  <p className="text-sm mt-2">Last Sync: {new Date(fbStatus.last_sync).toLocaleString()}</p>
+                )}
               </div>
+              <button
+                onClick={handleFacebookSync}
+                className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                Sync Now
+              </button>
             </div>
             <div className="bg-white rounded-lg p-6 border border-gray-200">
               <h3 className="text-lg font-semibold mb-4">Sync History</h3>
-              <div className="space-y-2">
-                {syncHistory.slice(0, 10).map((sync) => (
-                  <div key={sync.id} className="p-3 bg-gray-50 rounded">
-                    <p className="text-sm">{new Date(sync.timestamp).toLocaleString()}</p>
-                    <p className="text-xs text-gray-600">{sync.posts_found} posts found</p>
-                  </div>
-                ))}
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {syncHistory.length === 0 ? (
+                  <p className="text-sm text-gray-500">No sync history yet</p>
+                ) : (
+                  syncHistory.map((sync) => (
+                    <div
+                      key={sync.id}
+                      className={`p-3 rounded ${
+                        sync.status === "success" ? "bg-green-50" : "bg-red-50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {new Date(sync.timestamp).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {sync.posts_found} posts found • {sync.posts_added} added
+                          </p>
+                          {sync.error && <p className="text-xs text-red-600 mt-1">{sync.error}</p>}
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            sync.status === "success"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {sync.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -337,7 +503,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         return (
           <div className="bg-white rounded-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold mb-4">SEO Settings</h3>
-            <p className="text-sm text-gray-600">SEO management coming soon</p>
+            <SEOEditor settings={seoSettings} onSave={handleSaveSEO} />
           </div>
         );
 
@@ -348,7 +514,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold mb-4">Theme Settings</h3>
                 <ThemePicker theme={theme} onChange={setTheme} />
-                <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <button
+                  onClick={() => handleSaveTheme(theme)}
+                  className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
                   Save Theme
                 </button>
               </div>
@@ -357,7 +526,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <h3 className="text-lg font-semibold mb-4">Section Visibility</h3>
                 <SectionToggle visibility={sections} onChange={setSections} />
-                <button className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <button
+                  onClick={() => handleSaveSections(sections)}
+                  className="mt-4 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
                   Save Visibility
                 </button>
               </div>
@@ -367,37 +539,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       case "users":
         return (
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold mb-4">Users ({users.length})</h3>
-            <div className="space-y-2">
-              {users.map((user) => (
-                <div key={user.id} className="p-3 bg-gray-50 rounded flex justify-between">
-                  <div>
-                    <p className="font-medium">{user.username}</p>
-                    <p className="text-sm text-gray-600">{user.role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <UserManager
+            users={users}
+            onRefresh={loadDashboardData}
+            onActivity={logActivity}
+          />
         );
 
       case "backup":
         return (
-          <div className="bg-white rounded-lg p-6 border border-gray-200">
-            <h3 className="text-lg font-semibold mb-4">Backup & Export</h3>
-            <div className="space-y-4">
-              <button
-                onClick={() => window.open("/api/export", "_blank")}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Export All Data
-              </button>
-              <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                Create Backup
-              </button>
-            </div>
-          </div>
+          <BackupManager onRefresh={loadDashboardData} />
         );
 
       default:

@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateGalleryImage, deleteGalleryImage } from "@/lib/storage/gallery";
+import { createErrorResponse } from "@/lib/errors";
+import { verifyAdminSession } from "@/lib/auth";
 import type { GalleryImage } from "@/types";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await verifyAdminSession(request);
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body: Partial<GalleryImage> = await request.json();
     const updated = await updateGalleryImage(params.id, body);
@@ -19,13 +29,7 @@ export async function PUT(
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json(createErrorResponse(error), { status: 500 });
   }
 }
 
@@ -33,6 +37,14 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await verifyAdminSession(request);
+  if (!session) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
   try {
     const deleted = await deleteGalleryImage(params.id);
     
@@ -45,13 +57,7 @@ export async function DELETE(
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    return NextResponse.json(createErrorResponse(error), { status: 500 });
   }
 }
 
