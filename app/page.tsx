@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import Featured from "@/components/Featured";
 import Gallery from "@/components/Gallery";
 import VideoReel from "@/components/VideoReel";
 import About from "@/components/About";
@@ -10,14 +11,16 @@ import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
 import { motion } from "framer-motion";
-import type { SanitizedPost, PostsApiResponse } from "@/types";
+import type { SanitizedPost, PostsApiResponse, FeaturedImage } from "@/types";
 
 export default function Home() {
   const [allPosts, setAllPosts] = useState<SanitizedPost[]>([]);
+  const [featuredImages, setFeaturedImages] = useState<FeaturedImage[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<SanitizedPost | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -35,7 +38,23 @@ export default function Home() {
       }
     };
 
+    const fetchFeatured = async () => {
+      try {
+        const response = await fetch("/api/featured");
+        const data = await response.json();
+        
+        if (data.images) {
+          setFeaturedImages(data.images);
+        }
+      } catch (error) {
+        console.error("Error fetching featured images:", error);
+      } finally {
+        setFeaturedLoading(false);
+      }
+    };
+
     fetchPosts();
+    fetchFeatured();
   }, []);
 
   const photos = allPosts.filter((post) => post.type === "photo");
@@ -73,6 +92,28 @@ export default function Home() {
       <Navigation />
       
       <Hero />
+      
+      {/* Featured Section */}
+      {!featuredLoading && featuredImages.length > 0 && (
+        <Featured
+          images={featuredImages}
+          onImageClick={(image) => {
+            // Convert featured image to post-like object for lightbox
+            const featuredPost: SanitizedPost = {
+              id: image.id,
+              type: "photo",
+              media_url: image.image_url,
+              thumbnail_url: image.thumbnail_url,
+              caption: image.caption || image.title,
+              created_time: image.created_at,
+              source_link: image.image_url,
+            };
+            setSelectedPost(featuredPost);
+            setCurrentIndex(0);
+            setLightboxOpen(true);
+          }}
+        />
+      )}
       
       {/* Gallery Section */}
       <section id="gallery" className="py-32 px-4 sm:px-6 lg:px-8 bg-white">

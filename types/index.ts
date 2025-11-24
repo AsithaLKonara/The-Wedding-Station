@@ -115,3 +115,22 @@ export interface PostFeedProps {
   refreshInterval?: number;
 }
 
+/**
+ * Featured Images Types
+ */
+export interface FeaturedImage {
+  id: string;
+  image_url: string;
+  thumbnail_url?: string;
+  title?: string;
+  caption?: string;
+  order: number;
+  created_at: string;
+}
+
+export interface FeaturedImagesApiResponse {
+  images: FeaturedImage[];
+  success: boolean;
+  error?: string;
+}
+

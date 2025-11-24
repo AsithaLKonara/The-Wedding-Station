@@ -40,7 +40,7 @@ export default function About() {
             </p>
             <p className="text-gray-600 text-lg leading-relaxed font-light">
               Our team combines artistic vision with technical expertise to deliver images and
-              videos that you'll treasure for a lifetime. From intimate ceremonies to grand
+              videos that you&apos;ll treasure for a lifetime. From intimate ceremonies to grand
               celebrations, we approach each event with dedication, creativity, and a commitment
               to excellence.
             </p>

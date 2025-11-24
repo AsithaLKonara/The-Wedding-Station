@@ -87,7 +87,7 @@ export default function ContactForm() {
             Get In Touch
           </h2>
           <p className="text-gray-600 text-lg font-light max-w-2xl mx-auto mb-8">
-            Let's discuss how we can make your special day unforgettable
+            Let&apos;s discuss how we can make your special day unforgettable
           </p>
           <div className="w-24 h-px bg-gray-300 mx-auto" />
         </motion.div>
