@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE || "The Wedding Station";
 const siteDescription =
@@ -27,8 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={inter.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
-

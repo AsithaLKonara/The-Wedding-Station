@@ -15,6 +15,15 @@ const config: Config = {
       borderRadius: {
         "2xl": "1.5rem",
       },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+      },
+      letterSpacing: {
+        'wide': '0.1em',
+        'wider': '0.2em',
+        'widest': '0.3em',
+      },
     },
   },
   plugins: [],

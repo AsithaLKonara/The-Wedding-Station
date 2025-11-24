@@ -1,87 +1,140 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20,
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   const siteTitle = process.env.NEXT_PUBLIC_SITE_TITLE || "The Wedding Station";
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-black/40 z-0" />
+    <section
+      id="home"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black"
+    >
+      {/* Background Image with Parallax Effect */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40"
+        style={{
+          backgroundImage: "url('https://images.unsplash.com/photo-1519741497674-611481863552?w=1920')",
+          transform: `translate(${mousePosition.x}px, ${mousePosition.y}px) scale(1.1)`,
+          transition: "transform 0.1s ease-out",
+        }}
+      />
       
-      {/* Animated background elements */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
 
       {/* Content */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 text-center px-4 sm:px-6 lg:px-8"
+        transition={{ duration: 1.2, ease: "easeOut" }}
+        className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto"
       >
+        {/* Decorative Line */}
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: 100 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="h-px bg-white/30 mx-auto mb-8"
+        />
+
         <motion.h1
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-pink-200"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3 }}
+          className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-light text-white mb-6 tracking-tight leading-none"
         >
-          {siteTitle}
+          {siteTitle.split(" ").map((word, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
+              className="block"
+            >
+              {word}
+            </motion.span>
+          ))}
         </motion.h1>
-        
+
+        <motion.div
+          initial={{ opacity: 0, width: 0 }}
+          animate={{ opacity: 1, width: 100 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="h-px bg-white/30 mx-auto mb-8"
+        />
+
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-xl sm:text-2xl md:text-3xl text-gray-300 mb-8 max-w-3xl mx-auto"
+          transition={{ duration: 1, delay: 0.8 }}
+          className="text-lg sm:text-xl md:text-2xl text-white/80 font-light tracking-widest uppercase mb-12 letter-spacing-wide"
         >
-          Capturing Your Special Moments with Elegance & Artistry
+          Capturing Moments, Creating Memories
         </motion.p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          transition={{ duration: 1, delay: 1 }}
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center"
         >
-          <a
+          <motion.a
             href="#gallery"
-            className="px-8 py-4 bg-white text-gray-900 rounded-2xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-4 bg-white text-black font-medium text-sm uppercase tracking-widest hover:bg-white/90 transition-all duration-300"
           >
-            View Gallery
-          </a>
-          <a
+            View Portfolio
+          </motion.a>
+          <motion.a
             href="#contact"
-            className="px-8 py-4 border-2 border-white text-white rounded-2xl font-semibold text-lg hover:bg-white hover:text-gray-900 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-10 py-4 border border-white/50 text-white font-medium text-sm uppercase tracking-widest hover:bg-white/10 hover:border-white transition-all duration-300"
           >
             Get In Touch
-          </a>
+          </motion.a>
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
+      {/* Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+        transition={{ duration: 1, delay: 1.5 }}
+        className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-10"
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-white rounded-full flex justify-center"
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center text-white/60"
         >
-          <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-1 h-3 bg-white rounded-full mt-2"
-          />
+          <span className="text-xs uppercase tracking-widest mb-2">Scroll</span>
+          <div className="w-px h-12 bg-white/30 relative overflow-hidden">
+            <motion.div
+              animate={{ y: [0, 40, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-full h-8 bg-white/60"
+            />
+          </div>
         </motion.div>
       </motion.div>
     </section>
   );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import Gallery from "@/components/Gallery";
 import VideoReel from "@/components/VideoReel";
@@ -8,6 +9,7 @@ import About from "@/components/About";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
+import { motion } from "framer-motion";
 import type { SanitizedPost, PostsApiResponse } from "@/types";
 
 export default function Home() {
@@ -67,26 +69,39 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white">
+      <Navigation />
+      
       <Hero />
       
       {/* Gallery Section */}
-      <section id="gallery" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section id="gallery" className="py-32 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <span className="text-xs uppercase tracking-[0.3em] text-gray-400 font-light mb-4 block">
+              Portfolio
+            </span>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl font-serif font-light text-gray-900 mb-6 tracking-tight">
               Our Gallery
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg font-light max-w-2xl mx-auto mb-8">
               A collection of our finest moments
             </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mt-4"></div>
-          </div>
+            <div className="w-24 h-px bg-gray-300 mx-auto" />
+          </motion.div>
           
           {loading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-              <p className="mt-4 text-gray-500">Loading gallery...</p>
+            <div className="text-center py-32">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-900"></div>
+              <p className="mt-6 text-gray-400 text-sm uppercase tracking-widest font-light">
+                Loading gallery...
+              </p>
             </div>
           ) : (
             <Gallery posts={photos} onMediaClick={handleMediaClick} columns={3} />
@@ -95,22 +110,33 @@ export default function Home() {
       </section>
 
       {/* Video Reel Section */}
-      <section id="videos" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+      <section id="videos" className="py-32 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <span className="text-xs uppercase tracking-[0.3em] text-gray-400 font-light mb-4 block">
+              Cinematic
+            </span>
+            <h2 className="text-5xl sm:text-6xl md:text-7xl font-serif font-light text-gray-900 mb-6 tracking-tight">
               Video Reel
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="text-gray-600 text-lg font-light max-w-2xl mx-auto mb-8">
               Cinematic stories from our recent work
             </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-pink-500 mx-auto mt-4"></div>
-          </div>
+            <div className="w-24 h-px bg-gray-300 mx-auto" />
+          </motion.div>
           
           {loading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-              <p className="mt-4 text-gray-500">Loading videos...</p>
+            <div className="text-center py-32">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-900"></div>
+              <p className="mt-6 text-gray-400 text-sm uppercase tracking-widest font-light">
+                Loading videos...
+              </p>
             </div>
           ) : (
             <VideoReel videos={videos} />
@@ -137,4 +163,3 @@ export default function Home() {
     </main>
   );
 }
-

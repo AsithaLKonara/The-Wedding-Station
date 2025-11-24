@@ -10,8 +10,10 @@ export default function VideoReel({ videos }: VideoReelProps) {
 
   if (videos.length === 0) {
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500 text-lg">No videos available at the moment.</p>
+      <div className="text-center py-32">
+        <p className="text-gray-400 text-sm uppercase tracking-widest font-light">
+          No videos available at the moment
+        </p>
       </div>
     );
   }
@@ -26,15 +28,15 @@ export default function VideoReel({ videos }: VideoReelProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
         {videos.map((video, index) => (
           <motion.div
             key={video.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="group relative overflow-hidden rounded-2xl bg-gray-100 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, delay: index * 0.05 }}
+            className="group relative w-full aspect-video overflow-hidden bg-black cursor-pointer"
             onClick={() => handleVideoClick(video)}
             role="button"
             tabIndex={0}
@@ -46,19 +48,19 @@ export default function VideoReel({ videos }: VideoReelProps) {
               }
             }}
           >
-            <div className="relative aspect-video">
+            <div className="relative w-full h-full">
               {video.thumbnail_url ? (
                 <Image
                   src={video.thumbnail_url}
                   alt={video.caption || "Video thumbnail"}
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <div className="w-full h-full bg-gray-900 flex items-center justify-center">
                   <svg
-                    className="w-16 h-16 text-gray-400"
+                    className="w-16 h-16 text-white/30"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -67,25 +69,37 @@ export default function VideoReel({ videos }: VideoReelProps) {
                 </div>
               )}
               
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
               {/* Play button overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-all duration-500">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  className="w-20 h-20 border-2 border-white/90 rounded-full flex items-center justify-center backdrop-blur-sm bg-white/10 group-hover:bg-white/20 transition-all duration-500"
+                >
                   <svg
-                    className="w-10 h-10 text-gray-900 ml-1"
+                    className="w-8 h-8 text-white ml-1"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
                     <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
                   </svg>
-                </div>
+                </motion.div>
               </div>
             </div>
 
-            {/* Caption */}
+            {/* Caption - Premium style */}
             {video.caption && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                <p className="text-white text-sm line-clamp-2">{video.caption}</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileHover={{ opacity: 1, y: 0 }}
+                className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent transform translate-y-full group-hover:translate-y-0 transition-all duration-500"
+              >
+                <p className="text-white text-sm font-light leading-relaxed line-clamp-3">
+                  {video.caption}
+                </p>
+              </motion.div>
             )}
           </motion.div>
         ))}
@@ -98,7 +112,7 @@ export default function VideoReel({ videos }: VideoReelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4"
             onClick={handleClose}
           >
             <motion.div
@@ -118,7 +132,7 @@ export default function VideoReel({ videos }: VideoReelProps) {
                 </svg>
               </button>
               
-              <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+              <div className="relative aspect-video bg-black overflow-hidden">
                 <video
                   src={selectedVideo.media_url}
                   controls
@@ -131,8 +145,8 @@ export default function VideoReel({ videos }: VideoReelProps) {
               </div>
 
               {selectedVideo.caption && (
-                <div className="mt-4 text-white">
-                  <p>{selectedVideo.caption}</p>
+                <div className="mt-6 text-white">
+                  <p className="font-light">{selectedVideo.caption}</p>
                 </div>
               )}
             </motion.div>
@@ -142,4 +156,3 @@ export default function VideoReel({ videos }: VideoReelProps) {
     </>
   );
 }
-
