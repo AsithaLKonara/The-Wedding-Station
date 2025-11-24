@@ -59,7 +59,8 @@ export interface PostsApiResponse {
   posts: SanitizedPost[];
   cached: boolean;
   cache_age_seconds?: number;
-  last_updated: string;
+  last_updated?: string;
+  error?: string;
 }
 
 /**
